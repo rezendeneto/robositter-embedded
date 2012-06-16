@@ -2,7 +2,7 @@
  *   $Id:: pwm.c 5748 2010-11-30 23:48:37Z usb00423                         $
  *   Project: NXP LPC17xx PWM example
  *
- *   Description:
+ *   Description: **TESTE**
  *     This file contains PWM code example which include PWM initialization, 
  *     PWM interrupt handler, and APIs for PWM access.
  *
