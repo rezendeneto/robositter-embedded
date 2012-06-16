@@ -3,7 +3,7 @@
  *   Project: NXP LPC17xx ADC example
  *
  *   Description:
- *     This file contains ADC code example which include ADC 
+ *     This file contains ADC code example which include ADC **TESTE**
  *     initialization, ADC interrupt handler, and APIs for ADC
  *     reading.
  *
