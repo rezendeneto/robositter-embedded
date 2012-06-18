@@ -13,8 +13,10 @@
 #define CHANNEL_PWM1			0
 #define CHANNEL_PWM2			1
 //MOTOR B
-#define CHANNEL_PWM3			2
-#define CHANNEL_PWM4			3
+//#define CHANNEL_PWM3			2
+//#define CHANNEL_PWM4			3
+#define CHANNEL_PWM3			3
+#define CHANNEL_PWM4			2
 //MOTOR C
 #define CHANNEL_PWM5			4
 #define CHANNEL_PWM6			5

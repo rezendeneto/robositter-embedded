@@ -149,9 +149,9 @@ void rotate_robot(int direction, int speed){
 		PWM_Set( CHANNEL_PWM1, 0);
 		PWM_Set( CHANNEL_PWM2, speed1);
 		PWM_Set( CHANNEL_PWM3, 0);
-		PWM_Set( CHANNEL_PWM4, speed2);
+		PWM_Set( CHANNEL_PWM4, 0);
 		PWM_Set( CHANNEL_PWM5, 0);
-		PWM_Set( CHANNEL_PWM6, speed3);
+		PWM_Set( CHANNEL_PWM6, 0);
 	}
 	else{
 		//direção invertida dos motores
@@ -196,7 +196,7 @@ void TIMER0_IRQHandler (void){
 }
 
 void update_motor(){
-
+	return;
 	//verificar casos de divisão por 0. ou 0 / algo
 	if(base_motor == 1){
 

@@ -67,7 +67,7 @@ void msg_handle(){
 	systick_delay(10);
 
 	getData(spi_data);
-	//printf("%d %d %d\n",spi_data[0],spi_data[1],spi_data[2]);
+	printf("%d %d %d\n",spi_data[0],spi_data[1],spi_data[2]);
 	setTADDR((uint8_t *)"canel");
 
 	switch (spi_data[0]){
@@ -297,7 +297,7 @@ int main(void) {
 	/* Manda sinal que está vivo */
 	setTADDR((uint8_t *)"canel");
 	uint8_t aux[4] = { MSG_ALIVE, 0, 0 ,0};
-	//send_rf(aux);
+	send_rf(aux);
 
 
 	//init_timer(1,TIMER1_INTERVAL);
@@ -312,7 +312,7 @@ int main(void) {
 	NVIC_SetPriority(EINT3_IRQn, 10);
 	NVIC_EnableIRQ(EINT3_IRQn);
 
-	rotate_robot(0, 45);
+	//rotate_robot(1, 50);
 	/*main loop*/
 	while(1){
 
