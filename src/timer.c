@@ -127,30 +127,32 @@ void init_timer ( uint8_t timer_num, uint32_t TimerInterval )
 	{
 		LPC_TIM0->MR0 = TimerInterval;
 		LPC_TIM0->MCR = 3;				/* Interrupt and Reset on MR0 */
-		NVIC_SetPriority(TIMER0_IRQn,15);
+		//NVIC_SetPriority(TIMER0_IRQn,15);
 		NVIC_EnableIRQ(TIMER0_IRQn);
 	}
 	else if ( timer_num == 1 )
 	{
 		LPC_TIM1->MR0 = TimerInterval;
 		LPC_TIM1->MCR = 3;				/* Interrupt and Reset on MR1 */
-		NVIC_SetPriority(TIMER1_IRQn,15);
+		//NVIC_SetPriority(TIMER1_IRQn,10);
 		NVIC_EnableIRQ(TIMER1_IRQn);
 	}
 	else if ( timer_num == 2 )
 	{
 		// Turn on power to TIMER2 and TIMER3
 		// (TIMER0 and TIMER1 on by default)
-		LPC_SC->PCONP |=  PCTIM2_POWERON;
+	//	LPC_SC->PCONP |=  PCTIM2_POWERON;
 		LPC_TIM2->MR0 = TimerInterval;
 		LPC_TIM2->MCR = 3;				/* Interrupt and Reset on MR1 */
-		NVIC_SetPriority(TIMER2_IRQn,15);
+		NVIC_SetPriority(TIMER2_IRQn,30);
 		NVIC_EnableIRQ(TIMER2_IRQn);
 	}
 	else if ( timer_num == 3 )
 	{
+		//LPC_SC->PCONP |=  PCTIM3_POWERON;
 		LPC_TIM3->MR0 = TimerInterval;
 		LPC_TIM3->MCR = 3;				/* Interrupt and Reset on MR1 */
+
 		NVIC_EnableIRQ(TIMER3_IRQn);
 	}
 }

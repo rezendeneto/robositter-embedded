@@ -18,12 +18,11 @@
 #include "directions.h"
 #include "timer.h"
 #include "ultrasound.h"
-#include "stdio.h"
+//#include "stdio.h"
 #include "ssp.h"
 #include "nRF24L01.h"
-#include "tick.h"
 #include "adc.h"
-
+#include "delay.h"
 // Variable to store CRP value in. Will be placed automatically
 // by the linker when "Enable Code Read Protect" selected.
 // See crp.h header for more information
@@ -46,29 +45,48 @@ uint8_t ignore_all;
 uint8_t spi_data[SSP_BUFSIZE];
 uint8_t lerultrassom, ultrassomlido;
 uint8_t sliding;
-uint8_t t1;
+uint8_t stopmoviment;
+
 extern volatile uint32_t ADCValue[ADC_NUM];
 uint32_t ADCColision[ADC_NUM];
 uint32_t ADCBaseValue[ADC_NUM];
 extern volatile uint32_t ADCIntDone;
 
-#define MIN_DIST 30
+#define mediaad 10
+#define MIN_DIST 20
 #define COLISION_TIMEOUT 1000
+#define LED_PIN (1 << 9)
 //1s
 #define TIMER1_INTERVAL	((10*(SystemFrequency/100)))
 #define TIMER2_INTERVAL	((25*(SystemFrequency/100)))
-#define norm(x) x*255/360
+#define _360to255(x) x*255/360
+
+void led_toogle(){
+	int ledstate;
+	// Read current state of GPIO P0_0..31, which includes LED
+	ledstate = LPC_GPIO0->FIOPIN;
+	// Turn off LED if it is on
+	// (ANDing to ensure we only affect the LED output)
+	LPC_GPIO0->FIOCLR = ledstate & LED_PIN;
+	// Turn on LED if it is off
+	// (ANDing to ensure we only affect the LED output)
+	LPC_GPIO0->FIOSET = ((~ledstate) & LED_PIN);
+}
 
 void msg_handle(){
 	//printf("Got packet: \n");
 	/*
 	 * Get load the packet into the buffer.
 	 */
-	systick_delay(10);
+	led_toogle();
+	wait(10000);
 
 	getData(spi_data);
-	printf("%d %d %d\n",spi_data[0],spi_data[1],spi_data[2]);
+
+	//printf("%d %d %d\n",spi_data[0],spi_data[1],spi_data[2]);
 	setTADDR((uint8_t *)"canel");
+	//envia de volta a msg recebida (para a estação-base saber que o comando foi executado)
+	send_rf(spi_data);
 
 	switch (spi_data[0]){
 	case MSG_PING:
@@ -88,20 +106,19 @@ void msg_handle(){
 		break;
 	case MSG_MOVE:
 		if(!ignore_all){
-			if(current_speed == 0 || !aut_mode){//primeira vez
-				current_speed = spi_data[2];
-				current_angle = spi_data[1];
-			}else {
-				//soma os vetores
-				current_angle = (current_angle + spi_data[1])/2;
-			}
+			current_speed = spi_data[2];
+			current_angle = spi_data[1];
 			move_robot(spi_data[1], spi_data[2]);
 		}
 		break;
 	case MSG_ROTATE:
 		if(!ignore_all){
 			rotate_robot(spi_data[1], spi_data[2]);
-			//	printf("rotate\n");
+			/*rotate_robot(spi_data[1], 65);
+			wait(50000);
+			rotate_robot(spi_data[1], 50);
+			wait(75000);
+			rotate_robot(spi_data[1], 37);*/
 		}
 		break;
 	case MSG_STOP:
@@ -114,22 +131,20 @@ void msg_handle(){
 		break;
 	}
 
-	//envia de volta a msg recebida (para a estação-base saber que o comando foi executado)
-	send_rf(spi_data);
+
 	return;
 }
 
 void ultra_handler(){
-	#ifdef PRINTF
-	printf("colisao ultrassom\n");
-	#endif
-	if(current_speed == 0){
-		move_robot(norm(180), 70);
+	//return;
+	//printf("colisao ultrassom\n");
+	if(current_speed == 0 || distance < 8){
+		move_robot(_360to255(135), 70);
 		disable_timer(2);
 		enable_timer(2);
 	}else{
 		//chuta um lado
-		current_angle = (norm(90)+current_angle)/2;
+		current_angle = (_360to255(90)+current_angle)/2;
 		move_robot(current_angle,current_speed);
 		disable_timer(2);
 		enable_timer(2);
@@ -157,13 +172,14 @@ void EINT3_IRQHandler (void){
 	else if(LPC_GPIOINT->IO0IntStatR & ECHO_PIN){
 		//começa a contar em us
 
-		t0 = tick;
+		t0 = getTimeMicro();
 		LPC_GPIOINT->IO0IntClr |= ECHO_PIN;
 	}
 	else if(LPC_GPIOINT->IO0IntStatF & ECHO_PIN){
 		//para de contar
-		if(tick - t0 < 20000){
-			distance = (tick - t0)/58;
+		t1 = getTimeMicro();
+		if(t1 - t0 < 20000){
+			distance = (t1 - t0)/58;
 			//printf("dist = %d\n",distance);
 		}else{
 			distance = 0;
@@ -173,9 +189,7 @@ void EINT3_IRQHandler (void){
 			ultra_handler();
 		}
 		ultrassomlido = 1;
-#ifdef PRINTF
-		//printf("desceu\n");
-#endif
+
 		LPC_GPIOINT->IO0IntClr |= ECHO_PIN;
 
 	}
@@ -199,41 +213,38 @@ void TIMER1_IRQHandler (void){
 }
 //timer para ativação do motor (desvio de obstaculos)
 void TIMER2_IRQHandler(){
-	//printf("timer 2 \n");
 	stop_robot();
 	ignore_all = 0;
-	LPC_TIM2->IR = 1;
 	disable_timer(2);
+	LPC_TIM2->IR = 1;
 	return;
 }
 void bump_handler(uint8_t adcNum){
 	ADCColision[i] = 0;
-	#ifdef PRINTF
-	printf("colisao bumper %d\n",adcNum);
-	#endif
+	//printf("colisao bumper %d ADCColision = %d ADCBase = %d\n",adcNum,ADCValue[adcNum],ADCBaseValue[adcNum] );
 	ignore_all = 1;
 	stop_robot();
 	switch(adcNum){
 	case 0://45° -> 180
-		move_robot(norm(180),75);
+		move_robot(_360to255(180),75);
 		break;
 	case 1://90°  -> 225
-		move_robot(norm(225),75);
+		move_robot(_360to255(225),75);
 		break;
 	case 2://135° -> 270
-		move_robot(norm(270),75);
+		move_robot(_360to255(270),75);
 		break;
 	case 3://180° -> 315
-		move_robot(norm(315),75);
+		move_robot(_360to255(315),75);
 		break;
 	case 4://225° -> 0
-		move_robot(norm(0),75);
+		move_robot(_360to255(0),75);
 		break;
 	case 5://270° -> 45
-		move_robot(norm(45),75);
+		move_robot(_360to255(45),75);
 		break;
 	case 6://315° -> 90
-		move_robot(norm(90),75);
+		move_robot(_360to255(90),65);
 		break;
 	}
 	disable_timer(2);
@@ -247,9 +258,10 @@ int main(void) {
 	SystemClockUpdate();
 
 	/* incializa o sys_tick para contar de 1ms em 1ms */
-	sys_tick_init(1000);
+	//sys_tick_init(1000);
 	/* espera 10ms (settling time dos componentes) */
-	systick_delay(100);
+	initDelay();
+	wait(100000);
 	/* initialize SSP port */
 	SSP0Init();
 	/* inicializa pinos de PWM */
@@ -257,6 +269,11 @@ int main(void) {
 	init_ultrasound();
 	/* Initialize ADC  */
 	ADCInit( ADC_CLK );
+
+	/*inicia led rf*/
+	LPC_GPIO0->FIODIR |= LED_PIN;
+	LPC_GPIO0->FIOSET |= LED_PIN;
+
 
 	//initialize timer for ultrasound
 
@@ -267,6 +284,7 @@ int main(void) {
 	lerultrassom = 0;
 	ultrassomlido = 0;
 	sliding = 0;
+	stopmoviment = 0;
 
 	for(i = 0; i < SSP_BUFSIZE; i++){
 		spi_data[i] = 0;
@@ -277,7 +295,7 @@ int main(void) {
 		ADCColision[i] = 0;
 	}
 	/* Inicializa dados dos IR : média dos 10 primeiros valores lidos */
-	for(j = 0; j < 5; j++){
+	for(j = 0; j < mediaad; j++){
 		for ( i = 0; i < ADC_NUM; i++ )
 		{
 			ADCRead( i );
@@ -288,44 +306,42 @@ int main(void) {
 		}
 	}
 	for(i = 0; i < ADC_NUM; i++){
-		ADCBaseValue[i] /= 10;
+		ADCBaseValue[i] /= mediaad;
+		//printf("if %d valor inicial = %d\n",i,ADCBaseValue[i]);
 	}
 	//systick_delay(100);
 	/* configure rf deivce */
 	config_rf();
 
 	/* Manda sinal que está vivo */
-	setTADDR((uint8_t *)"canel");
-	uint8_t aux[4] = { MSG_ALIVE, 0, 0 ,0};
-	send_rf(aux);
+	//setTADDR((uint8_t *)"canel");
+	//uint8_t aux[4] = { MSG_ALIVE, 0, 0 ,0};
+	//send_rf(aux);
+	LPC_SC->PCONP |=  PCTIM2_POWERON | PCTIM3_POWERON;
 
-
-	//init_timer(1,TIMER1_INTERVAL);
+	init_timer(1,TIMER1_INTERVAL);
 	//enable_timer(1);
 
-	//init_timer(2,TIMER2_INTERVAL);
+	init_timer(2,TIMER2_INTERVAL);
 
 
 
+	//stop_robot();
 	//systick_delay(10);//settling time da loucura
 	//enable interrupts
-	NVIC_SetPriority(EINT3_IRQn, 10);
+	//NVIC_SetPriority(EINT3_IRQn, 10);
 	NVIC_EnableIRQ(EINT3_IRQn);
 
-	//rotate_robot(1, 50);
-	/*main loop*/
-	while(1){
 
+	/*main loop*/
+
+	while(1){
 		if(lerultrassom){
 			sendTrigger();
-			t1 = tick;
 			lerultrassom = 0;
-			while(!ultrassomlido/* && tick < t1 + 100000*/);
-			/*if(tick >= t1 + 100000){
-				printf("asd\n");
+			uint32_t ti = getTimeMicro();
+			while(!ultrassomlido && getTimeMicro() < ti + 50000);
 
-			}
-			*/sys_tick_init(1000);
 			ultrassomlido = 0;
 		}
 		/* lê valores dos IR */
@@ -334,7 +350,7 @@ int main(void) {
 			ADCRead( i );
 			while ( !ADCIntDone );
 			ADCIntDone = 0;
-			if(ADCValue[i] < ADCBaseValue[i]/1.75){
+			if(ADCValue[i] < ADCBaseValue[i]/1.55){
 				ADCColision[i]++;
 				if(ADCColision[i] > 5){
 					bump_handler(i);
@@ -347,7 +363,7 @@ int main(void) {
 		while(dataReady()){
 			msg_handle();
 		}
-		systick_delay(10);
+
 	}
 	return 0 ;
 }

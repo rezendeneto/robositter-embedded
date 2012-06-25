@@ -22,7 +22,7 @@
 #include "ssp.h"
 #include "nRF24L01.h"
 #include <stdlib.h>
-#include "tick.h"
+
 /* statistics of all the interrupts */
 volatile uint32_t interrupt0RxStat = 0;
 volatile uint32_t interrupt0OverRunStat = 0;
@@ -35,6 +35,7 @@ volatile uint32_t interrupt1RxTimeoutStat = 0;
  uint8_t channel = 1;
  uint8_t payload = 3;
  uint8_t PTX = 0;
+// uint8_t rx[4];
 /*****************************************************************************
 ** Function name:		SSP_IRQHandler
 **
@@ -231,6 +232,7 @@ void writeRegister(uint8_t reg, uint8_t * value, uint8_t len){
 		rx[a] = value[a-1];
 	}
 	csnLow();
+	free(rx);
 	SSPSend(rx, len+1);
 	csnHi();
 
@@ -263,8 +265,9 @@ void config_rf(){
 	/* set tranceiver address */
 	setRADDR((uint8_t*)"robot");
 
-	uint8_t result = 0x07;
-	writeRegister(RF_SETUP,&result,1);//1mpbs
+	//uint8_t result = 0x07;
+	uint8_t result = 0x27;
+	writeRegister(RF_SETUP,&result,1);//1mbps
 
 	// Set RF channel
 	writeRegister(RF_CH,&channel,1);
@@ -340,6 +343,7 @@ void send_rf(uint8_t * value)
     }
     csnLow();
     SSPSend(rx, payload+1);
+    free(rx);
     csnHi();
 
     ceHi();                     // Start transmission

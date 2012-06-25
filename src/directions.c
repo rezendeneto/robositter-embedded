@@ -54,7 +54,9 @@ void encoder_init(){
 **
 ******************************************************************************/
 void move_robot(float_t angle, int speed ){
-
+	speed_total = speed;
+	angle_total = angle;
+	isRotate = 0;
 	/* tranforma o angulo para radianos */
 	angle = (angle*0.02464);
 
@@ -137,7 +139,9 @@ void move_robot(float_t angle, int speed ){
 **
 ******************************************************************************/
 void rotate_robot(int direction, int speed){
-
+	isRotate = 1;
+	speed_total = speed;
+	direction_current = direction;
 
 	speed1 = speed;
 	speed2 = speed;
@@ -149,9 +153,9 @@ void rotate_robot(int direction, int speed){
 		PWM_Set( CHANNEL_PWM1, 0);
 		PWM_Set( CHANNEL_PWM2, speed1);
 		PWM_Set( CHANNEL_PWM3, 0);
-		PWM_Set( CHANNEL_PWM4, 0);
+		PWM_Set( CHANNEL_PWM4, speed2);
 		PWM_Set( CHANNEL_PWM5, 0);
-		PWM_Set( CHANNEL_PWM6, 0);
+		PWM_Set( CHANNEL_PWM6, speed3);
 	}
 	else{
 		//direção invertida dos motores
@@ -176,28 +180,45 @@ void rotate_robot(int direction, int speed){
 
 void moviment_start(){
 
-	init_timer( 0, TIMER0_INTERVAL );
+
 	cenc1 = 0;
 	cenc2 = 0;
 	cenc3 = 0;
 	Kd = 0;
 	PWM_Start();
+	init_timer( 3, TIMER0_INTERVAL );
 
 	x = 0 ;
-	enable_timer( 0 );
+	//talvez precise de um wait aqui
+	enable_timer( 3 );
 	cont = 0;
 
 }
 
-void TIMER0_IRQHandler (void){
+void TIMER3_IRQHandler (void){
 	update_motor();
-	LPC_TIM0->IR = 1;			/* clear interrupt flag */
+	LPC_TIM3->IR = 1;			/* clear interrupt flag */
 	return;
 }
 
 void update_motor(){
-	return;
-	//verificar casos de divisão por 0. ou 0 / algo
+	//verificar se esta se movendo
+	//se não estiver se movimentando
+	//cont++;
+	/*if(cenc1 < 3 && cenc2 < 3 && cenc3 < 3 && cont > 2){
+		speed_total *= 1.1;
+		if(speed_total > 100){
+			speed_total = 100;
+		}
+		if(isRotate){
+			rotate_robot(direction_current, speed_total);
+		}else{
+			move_robot(angle_total, speed_total);
+		}
+		disable_timer(3);
+		return;
+	}*/
+
 	if(base_motor == 1){
 
 		currentError1 = (cenc1 * prop1_ideal - cenc2);
@@ -247,7 +268,7 @@ void update_motor(){
 		prop1_real = (float)cenc1/cenc3;
 		prop2_real = (float)cenc2/cenc3;
 
-		values[cont] = prop1_real;
+	/*	values[cont] = prop1_real;
 		values2[cont] = prop2_real;
 		sp3[cont] = cenc3;
 		sp1[cont] = cenc1;
@@ -256,7 +277,7 @@ void update_motor(){
 		cont++;
 		if(cont == 10){
 			cont = 0;
-		}
+		}*/
 
 	}
 
@@ -312,10 +333,12 @@ void update_motor(){
 **
 ******************************************************************************/
 void stop_robot(){
-	disable_timer(0);
+	disable_timer(3);
 	speed1 = 0;
 	speed2 = 0;
 	speed3 = 0;
+	speed_total = 0;
+	isRotate = 0;
 	PWM_Set( CHANNEL_PWM1, 0);
 	PWM_Set( CHANNEL_PWM2, 0);
 	PWM_Set( CHANNEL_PWM3, 0);

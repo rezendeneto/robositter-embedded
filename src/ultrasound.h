@@ -9,7 +9,7 @@
 #endif
 
 volatile uint16_t distance;
-volatile uint32_t t0;//inicio da contagem
+volatile uint32_t t0, t1;//inicio da contagem
 volatile uint8_t newValue;
 void init_ultrasound();
 int readDataUltraSound();

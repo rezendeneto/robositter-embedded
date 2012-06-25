@@ -32,11 +32,12 @@ void init_ultrasound(){
 void sendTrigger() {
 	newValue = 0;
 	//muda contador para us
-	sys_tick_init(1000000);
+	//sys_tick_init(1000000);
 	//seta saida como alta
 	LPC_GPIO0->FIOSET |= TRIGGER_PIN;
 	//espera 10us
-	systick_delay(10);
+	wait(20);
+	//systick_delay(10);
 	//seta pino em baixa
 	LPC_GPIO0->FIOCLR |= TRIGGER_PIN;
 

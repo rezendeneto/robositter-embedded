@@ -13,10 +13,10 @@
 #define CHANNEL_PWM1			0
 #define CHANNEL_PWM2			1
 //MOTOR B
-//#define CHANNEL_PWM3			2
-//#define CHANNEL_PWM4			3
-#define CHANNEL_PWM3			3
-#define CHANNEL_PWM4			2
+#define CHANNEL_PWM3			2
+#define CHANNEL_PWM4			3
+//#define CHANNEL_PWM3			3
+//#define CHANNEL_PWM4			2
 //MOTOR C
 #define CHANNEL_PWM5			4
 #define CHANNEL_PWM6			5
@@ -37,7 +37,10 @@ volatile uint32_t cenc3;
 volatile int8_t speed1;
 volatile int8_t speed2;
 volatile int8_t speed3;
-
+volatile int8_t speed_total;
+volatile float_t angle_total;
+volatile isRotate;
+volatile direction_current;
 //direção 0 - normal; 1 - invertido motor 1 - bit 0, motor 2 bit 1, motor 3 bit 2
 volatile int8_t dspeed;
 
