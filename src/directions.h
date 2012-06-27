@@ -43,6 +43,7 @@ volatile int8_t isRotate;
 //volatile direction_current;
 //direção 0 - normal; 1 - invertido motor 1 - bit 0, motor 2 bit 1, motor 3 bit 2
 volatile int8_t dspeed;
+volatile int8_t speedIncreased;
 
 //speed(base_motor)/speed(outros motores) calculado
 float_t prop1_ideal;
