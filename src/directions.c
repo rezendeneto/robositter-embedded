@@ -201,26 +201,20 @@ void TIMER3_IRQHandler (void){
 	return;
 }
 
+//método do controle, é chamado a cada 100ms quando esta em movimento
 void update_motor(){
 	//verificar se esta se movendo
-	//se não estiver se movimentando
-	//cont++;
-	/*if(cenc1 < 3 && cenc2 < 3 && cenc3 < 3 && cont > 2){
-		speed_total *= 1.1;
-		if(speed_total > 100){
-			speed_total = 100;
-		}
-		if(isRotate){
-			rotate_robot(direction_current, speed_total);
-		}else{
-			move_robot(angle_total, speed_total);
-		}
-		disable_timer(3);
-		return;
-	}*/
 
-	if(base_motor == 1){
+	//se não estiver se movimentando (contadores dos encoders menor que 3) E estiver girando (isRotate)
+	cont++;
+	if(isRotate && cenc1 < 3 && cenc2 < 3 && cenc3 < 3 && cont > 2){
+		//aumenta a velocidade de cada motor em 10%
+		speed1 += speed1*1.1;
+		speed2 += speed2*1.1;
+		speed3 += speed3*1.1;
+	}
 
+	else if(base_motor == 1){
 		currentError1 = (cenc1 * prop1_ideal - cenc2);
 		currentError2 = (cenc1 * prop2_ideal - cenc3);
 		if(speed2 > 0){
@@ -232,21 +226,6 @@ void update_motor(){
 		if(speed3 > 0){
 			speed3 += Kp*(cenc1 * prop2_ideal - cenc3);
 		}
-
-		/*prop1_real = (float)cenc1/cenc2;
-		prop2_real = (float)cenc1/cenc3;
-
-		values[cont] = prop1_real;
-		values2[cont] = prop2_real;
-		sp1[cont] = speed2;
-		sp2[cont] = speed3;
-
-		cont++;
-		if(cont == 20){
-			cont = 0;
-		}*/
-
-
 	}
 	else if(base_motor == 2){
 		if(speed1 > 0){
@@ -257,7 +236,6 @@ void update_motor(){
 		}
 	}
 	else{
-
 		if(speed1 > 0){
 			speed1 += Kp*(cenc3 * prop1_ideal - cenc1);
 		}
@@ -267,18 +245,6 @@ void update_motor(){
 
 		prop1_real = (float)cenc1/cenc3;
 		prop2_real = (float)cenc2/cenc3;
-
-	/*	values[cont] = prop1_real;
-		values2[cont] = prop2_real;
-		sp3[cont] = cenc3;
-		sp1[cont] = cenc1;
-		sp2[cont] = cenc2;
-
-		cont++;
-		if(cont == 10){
-			cont = 0;
-		}*/
-
 	}
 
 	//limitações de velocidade
