@@ -206,8 +206,8 @@ void update_motor(){
 	//verificar se esta se movendo
 
 	//se não estiver se movimentando (contadores dos encoders menor que 3) E estiver girando (isRotate)
-	cont++;
-	if(isRotate && cenc1 < 3 && cenc2 < 3 && cenc3 < 3 && cont > 2){
+	//cont++;
+	if(isRotate && cenc1 < 3 && cenc2 < 3 && cenc3 < 3){
 		//aumenta a velocidade de cada motor em 10%
 		speed1 += speed1*1.1;
 		speed2 += speed2*1.1;
