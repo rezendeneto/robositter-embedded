@@ -274,9 +274,7 @@ int main(void) {
 	LPC_GPIO0->FIODIR |= LED_PIN;
 	LPC_GPIO0->FIOSET |= LED_PIN;
 
-
 	//initialize timer for ultrasound
-
 	current_speed = 0;
 	current_angle = 0;
 	aut_mode = 0;

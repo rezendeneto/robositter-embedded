@@ -56,7 +56,7 @@ void encoder_init(){
 void move_robot(float_t angle, int speed ){
 	speed_total = speed;
 	angle_total = angle;
-	isRotate = 0;
+//	isRotate = 0;
 	/* tranforma o angulo para radianos */
 	angle = (angle*0.02464);
 
@@ -139,9 +139,9 @@ void move_robot(float_t angle, int speed ){
 **
 ******************************************************************************/
 void rotate_robot(int direction, int speed){
-	isRotate = 1;
+	//isRotate = 1;
 	speed_total = speed;
-	direction_current = direction;
+//	direction_current = direction;
 
 	speed1 = speed;
 	speed2 = speed;
@@ -150,23 +150,23 @@ void rotate_robot(int direction, int speed){
 		//direção default dos motores
 		dspeed = 0;
 
-		PWM_Set( CHANNEL_PWM1, 0);
-		PWM_Set( CHANNEL_PWM2, speed1);
-		PWM_Set( CHANNEL_PWM3, 0);
-		PWM_Set( CHANNEL_PWM4, speed2);
-		PWM_Set( CHANNEL_PWM5, 0);
-		PWM_Set( CHANNEL_PWM6, speed3);
+		PWM_Set(CHANNEL_PWM1, 0);
+		PWM_Set(CHANNEL_PWM2, speed1);
+		PWM_Set(CHANNEL_PWM3, 0);
+		PWM_Set(CHANNEL_PWM4, speed2);
+		PWM_Set(CHANNEL_PWM5, 0);
+		PWM_Set(CHANNEL_PWM6, speed3);
 	}
 	else{
 		//direção invertida dos motores
 		dspeed = 0x07;
 
-		PWM_Set( CHANNEL_PWM1, speed1);
-		PWM_Set( CHANNEL_PWM2, 0);
-		PWM_Set( CHANNEL_PWM3, speed2);
-		PWM_Set( CHANNEL_PWM4, 0);
-		PWM_Set( CHANNEL_PWM5, speed3);
-		PWM_Set( CHANNEL_PWM6, 0);
+		PWM_Set(CHANNEL_PWM1, speed1);
+		PWM_Set(CHANNEL_PWM2, 0);
+		PWM_Set(CHANNEL_PWM3, speed2);
+		PWM_Set(CHANNEL_PWM4, 0);
+		PWM_Set(CHANNEL_PWM5, speed3);
+		PWM_Set(CHANNEL_PWM6, 0);
 	}
 	prop1_ideal = 1;
 	prop2_ideal = 1;
@@ -207,28 +207,28 @@ void update_motor(){
 
 	//se não estiver se movimentando (contadores dos encoders menor que 3) E estiver girando (isRotate)
 	//cont++;
-	if(isRotate && cenc1 < 3 && cenc2 < 3 && cenc3 < 3){
+	if(isRotate && cenc1 < 3 && cenc2 < 3 && cenc3 < 3) {
 		//aumenta a velocidade de cada motor em 10%
 		speed1 += speed1*1.1;
 		speed2 += speed2*1.1;
 		speed3 += speed3*1.1;
 	}
 
-	else if(base_motor == 1){
+	else if(base_motor == 1) {
 		currentError1 = (cenc1 * prop1_ideal - cenc2);
 		currentError2 = (cenc1 * prop2_ideal - cenc3);
-		if(speed2 > 0){
+		if(speed2 > 0) {
 			dError1 = currentError1 - lastError1;
 			sumError1 += currentError1;
 			lastError1 = currentError1;
 			speed2 += Kp*currentError1 + Ki*dError1 + Kd*dError1;
 		}
-		if(speed3 > 0){
+		if(speed3 > 0) {
 			speed3 += Kp*(cenc1 * prop2_ideal - cenc3);
 		}
 	}
-	else if(base_motor == 2){
-		if(speed1 > 0){
+	else if(base_motor == 2) {
+		if(speed1 > 0) {
 			speed1 += Kp*(cenc2 * prop1_ideal - cenc1);
 		}
 		if(speed3 > 0){

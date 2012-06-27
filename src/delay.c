@@ -6,6 +6,7 @@
  */
 
 #include "delay.h"
+
 void initDelay(){
 	LPC_TIM0->PR = 16;
 	//enable timer 0

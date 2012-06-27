@@ -39,8 +39,8 @@ volatile int8_t speed2;
 volatile int8_t speed3;
 volatile int8_t speed_total;
 volatile float_t angle_total;
-volatile isRotate;
-volatile direction_current;
+volatile int8_t isRotate;
+//volatile direction_current;
 //direção 0 - normal; 1 - invertido motor 1 - bit 0, motor 2 bit 1, motor 3 bit 2
 volatile int8_t dspeed;
 

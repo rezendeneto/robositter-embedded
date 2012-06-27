@@ -1,9 +1,7 @@
 #include "LPC17xx.h"
 #include "ultrasound.h"
 #include "tick.h"
-
-
-
+#include "delay.h"
 
 /*************************************************
  * init_ultrasound()
@@ -35,7 +33,7 @@ void sendTrigger() {
 	//sys_tick_init(1000000);
 	//seta saida como alta
 	LPC_GPIO0->FIOSET |= TRIGGER_PIN;
-	//espera 10us
+	//espera 20us
 	wait(20);
 	//systick_delay(10);
 	//seta pino em baixa
