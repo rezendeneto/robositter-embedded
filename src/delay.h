@@ -10,6 +10,7 @@
 #include "LPC17xx.h"                        /* LPC13xx definitions */
 
 void initDelay();
+
 void wait(uint32_t timemicro);
 uint32_t getTimeMicro();
 
